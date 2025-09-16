@@ -2,8 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
-
 use std::cmp::Ord;
 use std::default::Default;
 
@@ -37,7 +35,39 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.bubble_up(self.count);
+    }
+    
+    fn bubble_up(&mut self, mut idx: usize) {
+        while idx > 1 {
+            let parent_idx = self.parent_idx(idx);
+            let current = &self.items[idx];
+            let parent = &self.items[parent_idx];
+            match (self.comparator)(current, parent) {
+                true => {
+                    self.items.swap(idx, parent_idx);
+                    idx = parent_idx;
+                }
+                false => break,
+            }
+        }
+    }
+    
+    fn bubble_down(&mut self, mut idx: usize) {
+        while self.children_present(idx) {
+            let smallest_child = self.smallest_child_idx(idx);
+            let current = &self.items[idx];
+            let smallest = &self.items[smallest_child];
+            match (self.comparator)(smallest, current) {
+                true => {
+                    self.items.swap(idx, smallest_child);
+                    idx = smallest_child;
+                }
+                false => break,
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +87,12 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+        match right > self.count || (self.comparator)(&self.items[left], &self.items[right]) {
+            true => left,
+            false => right,
+        }
     }
 }
 
@@ -84,8 +118,18 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count == 0 {
+            return None;
+        }
+        
+        let result = self.items.swap_remove(1);
+        self.count -= 1;
+        
+        if self.count > 0 {
+            self.bubble_down(1);
+        }
+        
+        Some(result)
     }
 }
 
