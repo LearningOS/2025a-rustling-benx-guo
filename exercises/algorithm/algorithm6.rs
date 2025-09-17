@@ -2,12 +2,28 @@
 	dfs
 	This problem requires you to implement a basic DFS traversal
 */
-
-// I AM NOT DONE
-use std::collections::HashSet;
+use std::collections::{HashSet, VecDeque};
 
 struct Graph {
     adj: Vec<Vec<usize>>, 
+}
+
+struct StackWrapper {
+    value: VecDeque<usize>,
+}
+
+impl StackWrapper {
+    fn new() -> Self {
+        Self { value: VecDeque::new() }
+    }
+
+    fn push(&mut self, value: usize) {
+        self.value.push_back(value);
+    }
+
+    fn pop(&mut self) -> Option<usize> {
+        self.value.pop_back()
+    }
 }
 
 impl Graph {
@@ -22,15 +38,34 @@ impl Graph {
         self.adj[dest].push(src); 
     }
 
-    fn dfs_util(&self, v: usize, visited: &mut HashSet<usize>, visit_order: &mut Vec<usize>) {
-        //TODO
-    }
-
-    // Perform a depth-first search on the graph, return the order of visited nodes
+    // Perform a depth-first search on the graph using a stack, return the order of visited nodes
     fn dfs(&self, start: usize) -> Vec<usize> {
         let mut visited = HashSet::new();
-        let mut visit_order = Vec::new(); 
-        self.dfs_util(start, &mut visited, &mut visit_order);
+        let mut visit_order = Vec::new();
+        let mut stack = StackWrapper::new();
+        
+        // 将起始节点压入栈
+        stack.push(start);
+        
+        while let Some(v) = stack.pop() {
+            // 如果节点已经被访问过，跳过
+            if visited.contains(&v) {
+                continue;
+            }
+            
+            // 标记为已访问并记录访问顺序
+            visited.insert(v);
+            visit_order.push(v);
+            
+            // 将当前节点的所有未访问邻居压入栈
+            // 注意：为了保持与递归版本相同的访问顺序，我们需要反向遍历邻居
+            for &neighbor in self.adj[v].iter().rev() {
+                if !visited.contains(&neighbor) {
+                    stack.push(neighbor);
+                }
+            }
+        }
+        
         visit_order
     }
 }
